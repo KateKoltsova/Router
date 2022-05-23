@@ -3,6 +3,10 @@
 namespace Koltsova\Router;
 
 use Aigletter\Contracts\Routing\RouteInterface;
+use Koltsova\Router\Exceptions\MethodNotAllowedException;
+use Koltsova\Router\Exceptions\NotFoundException;
+use Koltsova\Router\Exceptions\NotImplementedException;
+use Koltsova\Router\Exceptions\RequestException;
 
 /**
  * Class router implements the RouteInterface from the Aigletter\Contracts package.
@@ -38,11 +42,17 @@ class Router implements RouteInterface
             return $path === $uri;
         }, ARRAY_FILTER_USE_KEY);
         if (empty($usableAction)) {
-            throw new \Exception("Searching page is not found!" . '</br>');
+            throw new NotFoundException();
         } else {
             if (is_array($usableAction[$uri])) {
                 [$className, $methodName] = $usableAction[$uri];
-                $this->getMethodParameters($className, $methodName);
+                if (!class_exists($className)) {
+                    throw new NotImplementedException();
+                } elseif (!method_exists($className, $methodName)) {
+                    throw new MethodNotAllowedException();
+                } else {
+                    $this->getMethodParameters($className, $methodName);
+                }
                 return function () use ($className, $methodName) {
                     $class = new $className;
                     return call_user_func_array([$class, $methodName], $this->args);
@@ -96,7 +106,7 @@ class Router implements RouteInterface
                     if ($parameter->isOptional()) {
                         $param = $parameter->getDefaultValue();
                     } else {
-                        throw new \Exception("Your request is not consist required parameters!" . '</br>');
+                        throw new RequestException();
                         die();
                     }
                 } else {
