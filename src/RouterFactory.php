@@ -11,12 +11,6 @@ use Aigletter\Contracts\ComponentFactory;
 class RouterFactory extends ComponentFactory
 {
     /**
-     * Consist link to Router object.
-     * @var Router
-     */
-    protected static $router;
-
-    /**
      * The main function of class.
      * Creating object of Router class and writing path-action from config file with addRoute function of Router.
      * @return Router
@@ -24,13 +18,13 @@ class RouterFactory extends ComponentFactory
      */
     protected function createConcreteComponent()
     {
-        if (self::$router === null) {
-            self::$router = new Router();
+        $router = new Router();
+
+        if (empty($this->arguments['routes'])) {
+            throw new \Exception('Choose routes directory!');
+        } else {
+            require_once $this->arguments['routes'];
         }
-        $actions = require_once __DIR__.'/../config/actions.php';
-        foreach ($actions as $path => $action) {
-            self::$router->addRoute($path, $action);
-        }
-        return self::$router;
+        return $router;
     }
 }
