@@ -27,9 +27,10 @@ class RouterFactory extends ComponentFactory
         if (self::$router === null) {
             self::$router = new Router();
         }
-        $actions = require_once __DIR__.'/../config/actions.php';
-        foreach ($actions as $path => $action) {
-            self::$router->addRoute($path, $action);
+        if (empty($this->arguments['routes'])) {
+            throw new \Exception('Choose routes directory!');
+        } else {
+            require_once $this->arguments;
         }
         return self::$router;
     }
